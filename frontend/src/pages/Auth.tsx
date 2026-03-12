@@ -88,7 +88,7 @@ const Auth = () => {
   }, [location.search, navigate, setSessionFromToken]);
 
   const handleGoogleSignIn = () => {
-    window.location.assign(`${API_BASE_URL}/api/auth/google`);
+    window.location.assign(`${API_BASE_URL}/auth/google`);
   };
 
   const handleLogin = async (event: React.FormEvent) => {
