@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    apiRequest<{ user: ApiUser }>("/auth/me", { token: storedToken })
+    apiRequest<{ user: ApiUser }>("/api/auth/me", { token: storedToken })
       .then((response) => {
         setToken(storedToken);
         setUser(response.user);
@@ -55,13 +55,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const setSessionFromToken = useCallback(async (nextToken: string) => {
-    const response = await apiRequest<{ user: ApiUser }>("/auth/me", { token: nextToken });
+    const response = await apiRequest<{ user: ApiUser }>("/api/auth/me", { token: nextToken });
     setSession(nextToken, response.user);
   }, [setSession]);
 
   const signOut = useCallback(async () => {
     if (token) {
-      await apiRequest<{ message: string }>("/auth/logout", {
+      await apiRequest<{ message: string }>("/api/auth/logout", {
         method: "POST",
         token,
       }).catch(() => null);
