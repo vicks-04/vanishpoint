@@ -41,7 +41,7 @@ export function useVaultFolders() {
     if (!user) return;
     setLoading(true);
     try {
-      const response = await apiRequest<{ folders: VaultFolder[] }>("/vault/folders");
+      const response = await apiRequest<{ folders: VaultFolder[] }>("/api/vault/folders");
       setFolders(response.folders || []);
     } catch {
       toast.error("Failed to load folders");
@@ -62,7 +62,7 @@ export function useVaultFolders() {
   const createFolder = async (name: string, parentId?: string | null) => {
     if (!user) return;
     try {
-      await apiRequest<{ folder: VaultFolder }>("/vault/folders", {
+      await apiRequest("/api/vault/folders", {
         method: "POST",
         body: JSON.stringify({
           name,
@@ -78,7 +78,7 @@ export function useVaultFolders() {
 
   const deleteFolder = async (folderId: string) => {
     try {
-      await apiRequest<{ message: string }>(`/vault/folders/${folderId}`, {
+      await apiRequest(`/api/vault/folders/${folderId}`, {
         method: "DELETE",
       });
       toast.success("Folder deleted");
@@ -90,7 +90,7 @@ export function useVaultFolders() {
 
   const renameFolder = async (folderId: string, newName: string) => {
     try {
-      await apiRequest<{ folder: VaultFolder }>(`/vault/folders/${folderId}`, {
+      await apiRequest(`/api/vault/folders/${folderId}`, {
         method: "PATCH",
         body: JSON.stringify({ name: newName }),
       });
@@ -116,7 +116,7 @@ export function useVaultFiles(folderId: string | null) {
     setLoading(true);
     try {
       const search = folderId ? `?folderId=${encodeURIComponent(folderId)}` : "";
-      const response = await apiRequest<{ files: VaultFile[] }>(`/vault/files${search}`);
+      const response = await apiRequest<{ files: VaultFile[] }>(`/api/vault/files${search}`);
       setFiles(response.files || []);
     } catch {
       toast.error("Failed to load files");
@@ -137,6 +137,7 @@ export function useVaultFiles(folderId: string | null) {
 
   const uploadFile = async (file: File, passphrase: string) => {
     if (!user) return;
+
     setUploading(true);
     setUploadProgress(10);
 
@@ -148,9 +149,11 @@ export function useVaultFiles(folderId: string | null) {
       setUploadProgress(60);
 
       const encryptedName = `${crypto.randomUUID()}.enc`;
+
+      const encryptedBlob = new Blob([encrypted]);
+
       const formData = new FormData();
-      formData.append("file", new Blob([encrypted], { type: "application/octet-stream" }), encryptedName);
-      formData.append("folderId", folderId || "");
+      formData.append("file", encryptedBlob, encryptedName);
       formData.append("name", file.name);
       formData.append("encryptedName", encryptedName);
       formData.append("size", String(file.size));
@@ -158,10 +161,15 @@ export function useVaultFiles(folderId: string | null) {
       formData.append("encryptionSalt", salt);
       formData.append("encryptionIv", iv);
 
-      await apiRequest<{ file: VaultFile }>("/vault/files", {
+      if (folderId) {
+        formData.append("folderId", folderId);
+      }
+
+      await apiRequest<{ file: VaultFile }>("/api/vault/files", {
         method: "POST",
         body: formData,
       });
+
       setUploadProgress(100);
       toast.success("File uploaded & encrypted");
       fetchFiles();
@@ -175,8 +183,9 @@ export function useVaultFiles(folderId: string | null) {
 
   const downloadFile = async (file: VaultFile, passphrase: string) => {
     try {
-      const blob = await apiRequestBlob(`/vault/files/${file.id}/download`);
+      const blob = await apiRequestBlob(`/api/vault/files/${file.id}/download`);
       const encryptedBuffer = await blob.arrayBuffer();
+
       const decrypted = await decryptFile(
         encryptedBuffer,
         passphrase,
@@ -186,10 +195,12 @@ export function useVaultFiles(folderId: string | null) {
 
       const outputBlob = new Blob([decrypted]);
       const url = URL.createObjectURL(outputBlob);
+
       const a = document.createElement("a");
       a.href = url;
       a.download = file.name;
       a.click();
+
       URL.revokeObjectURL(url);
       toast.success("File decrypted & downloaded");
     } catch {
@@ -199,7 +210,7 @@ export function useVaultFiles(folderId: string | null) {
 
   const deleteFile = async (file: VaultFile) => {
     try {
-      await apiRequest<{ message: string }>(`/vault/files/${file.id}`, {
+      await apiRequest(`/api/vault/files/${file.id}`, {
         method: "DELETE",
       });
       toast.success("File deleted");
@@ -209,7 +220,16 @@ export function useVaultFiles(folderId: string | null) {
     }
   };
 
-  return { files, loading, uploading, uploadProgress, uploadFile, downloadFile, deleteFile, refetch: fetchFiles };
+  return {
+    files,
+    loading,
+    uploading,
+    uploadProgress,
+    uploadFile,
+    downloadFile,
+    deleteFile,
+    refetch: fetchFiles,
+  };
 }
 
 export function useVaultShares() {
@@ -217,11 +237,13 @@ export function useVaultShares() {
 
   const createShare = async (fileId: string, expiresInHours: number = 24) => {
     if (!user) return null;
+
     try {
-      const response = await apiRequest<{ share: VaultShare }>("/vault/shares", {
+      const response = await apiRequest<{ share: VaultShare }>("/api/vault/shares", {
         method: "POST",
         body: JSON.stringify({ fileId, expiresInHours }),
       });
+
       toast.success("Share link created");
       return response.share;
     } catch {
@@ -232,7 +254,7 @@ export function useVaultShares() {
 
   const deleteShare = async (shareId: string) => {
     try {
-      await apiRequest<{ message: string }>(`/vault/shares/${shareId}`, {
+      await apiRequest(`/api/vault/shares/${shareId}`, {
         method: "DELETE",
       });
       toast.success("Share link revoked");
