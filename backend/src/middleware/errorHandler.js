@@ -19,16 +19,6 @@ export function errorHandler(err, _req, res, _next) {
   }
 
   if (err.code === 11000) {
-<<<<<<< HEAD
-=======
-    const duplicateField = Object.keys(err.keyPattern || {})[0];
-    if (duplicateField === "email") {
-      return res.status(409).json({ error: "Email is already in use" });
-    }
-    if (duplicateField === "googleId") {
-      return res.status(409).json({ error: "Google account is already linked" });
-    }
->>>>>>> origin/main
     return res.status(409).json({ error: "Duplicate value" });
   }
 

@@ -2,10 +2,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User.js";
 import { PasswordResetToken } from "../models/PasswordResetToken.js";
-<<<<<<< HEAD
-=======
-import { AuthExchangeCode } from "../models/AuthExchangeCode.js";
->>>>>>> origin/main
 import { env } from "../config/env.js";
 import { AppError, asyncHandler } from "../utils/errors.js";
 import { randomHex, sha256 } from "../utils/crypto.js";
@@ -54,24 +50,6 @@ function redirectAuthError(res, message) {
   return res.redirect(302, buildAuthRedirectUrl({ google_error: errorMessage }));
 }
 
-<<<<<<< HEAD
-=======
-async function createExchangeCode({ userId, provider }) {
-  const rawCode = randomHex(32);
-  const codeHash = sha256(rawCode);
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-  await AuthExchangeCode.create({
-    codeHash,
-    userId,
-    provider,
-    expiresAt,
-  });
-
-  return rawCode;
-}
-
->>>>>>> origin/main
 async function exchangeGoogleCodeForTokens(code) {
   const payload = new URLSearchParams({
     code,
@@ -293,52 +271,15 @@ export async function googleAuthCallback(req, res) {
     const tokenData = await exchangeGoogleCodeForTokens(code);
     const googleProfile = await getGoogleProfileFromIdToken(tokenData.id_token);
     const user = await findOrCreateGoogleUser(googleProfile);
-<<<<<<< HEAD
     const token = signAuthToken(user._id);
 
     return res.redirect(302, buildAuthRedirectUrl({ token, provider: "google" }));
-=======
-    const exchangeCode = await createExchangeCode({ userId: user._id, provider: "google" });
-
-    return res.redirect(302, buildAuthRedirectUrl({ code: exchangeCode, provider: "google" }));
->>>>>>> origin/main
   } catch (error) {
     const message = error instanceof AppError ? error.message : "Google authentication failed";
     return redirectAuthError(res, message);
   }
 }
 
-<<<<<<< HEAD
-=======
-export const exchangeAuthCode = asyncHandler(async (req, res) => {
-  const rawCode = String(req.body.code || "").trim();
-  if (!rawCode) {
-    throw new AppError("Auth code is required", 400);
-  }
-
-  const codeHash = sha256(rawCode);
-  const entry = await AuthExchangeCode.findOne({
-    codeHash,
-    consumedAt: null,
-    expiresAt: { $gt: new Date() },
-  });
-
-  if (!entry) {
-    throw new AppError("Invalid or expired auth code", 401);
-  }
-
-  entry.consumedAt = new Date();
-  await entry.save();
-
-  const user = await User.findById(entry.userId);
-  if (!user) {
-    throw new AppError("User not found", 404);
-  }
-
-  return issueAuthResponse(res, user);
-});
-
->>>>>>> origin/main
 export const me = asyncHandler(async (req, res) => {
   const user = await User.findById(req.userId);
   if (!user) {

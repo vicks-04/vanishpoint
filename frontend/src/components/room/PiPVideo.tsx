@@ -23,11 +23,7 @@ const PiPVideo = ({ stream, label, onClick, activeSpeaker = false }: PiPVideoPro
       }`}
       title="Swap view"
     >
-<<<<<<< HEAD
       <StreamVideo stream={stream} muted mirror fallbackText="No camera" />
-=======
-      <StreamVideo stream={stream} muted mirror={false} fallbackText="No camera" />
->>>>>>> origin/main
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/35 to-transparent opacity-90" />
 
@@ -42,8 +38,4 @@ const PiPVideo = ({ stream, label, onClick, activeSpeaker = false }: PiPVideoPro
   );
 };
 
-<<<<<<< HEAD
 export default PiPVideo;
-=======
-export default PiPVideo;
->>>>>>> origin/main

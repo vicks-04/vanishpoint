@@ -13,11 +13,7 @@ interface VideoPreviewProps {
 
 const VideoPreview = ({
   stream,
-<<<<<<< HEAD
   mirror = true,
-=======
-  mirror = false,
->>>>>>> origin/main
   muted = true,
   isCameraOn = true,
   isMicOn = true,

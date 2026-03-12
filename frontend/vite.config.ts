@@ -13,7 +13,6 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "src")
     }
-<<<<<<< HEAD
   },
 
   server: {
@@ -23,7 +22,5 @@ export default defineConfig({
     allowedHosts: [
       "lanes-fantastic-hartford-guardian.trycloudflare.com"
     ]
-=======
->>>>>>> origin/main
   }
 });

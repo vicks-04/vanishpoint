@@ -4,10 +4,6 @@ import {
   googleAuthCallback,
   googleAuthStart,
   googleLoginWithIdToken,
-<<<<<<< HEAD
-=======
-  exchangeAuthCode,
->>>>>>> origin/main
   login,
   logout,
   me,
@@ -21,10 +17,6 @@ const router = Router();
 router.post("/signup", signUp);
 router.post("/login", login);
 router.post("/google", googleLoginWithIdToken);
-<<<<<<< HEAD
-=======
-router.post("/exchange", exchangeAuthCode);
->>>>>>> origin/main
 router.get("/google", googleAuthStart);
 router.get("/google/callback", googleAuthCallback);
 router.post("/forgot-password", forgotPassword);

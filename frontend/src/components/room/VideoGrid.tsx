@@ -129,11 +129,7 @@ function TileCard({
         <StreamVideo
           stream={tile.stream}
           muted={tile.isLocal}
-<<<<<<< HEAD
           mirror={tile.isLocal}
-=======
-          mirror={false}
->>>>>>> origin/main
           isLocal={tile.isLocal}
           isScreenShare={tile.isScreenShare}
           className={fitContain ? "object-contain bg-black/60" : "object-contain bg-black/55"}

@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { useSocket } from "./useSocket";
-<<<<<<< HEAD
-=======
-import { getAuthToken } from "@/lib/api";
-import { getRoomAccessToken } from "@/lib/roomAccess";
->>>>>>> origin/main
 
 type ChatSender = "me" | "peer" | "system";
 type ParticipantRole = "host" | "guest";
@@ -57,10 +52,6 @@ interface UseRoomRtcOptions {
   preferredLocalStream?: MediaStream | null;
   isHost?: boolean;
   displayName?: string;
-<<<<<<< HEAD
-=======
-  hostKey?: string | null;
->>>>>>> origin/main
   onVideoCallRequested?: (fromPeerId: string) => void;
   onVideoCallAccepted?: (fromPeerId: string) => void;
   onVideoCallDeclined?: (fromPeerId: string) => void;
@@ -152,26 +143,11 @@ function toApiBaseUrl() {
 
 async function uploadRoomAttachment(roomId: string, file: File) {
   const body = new FormData();
-<<<<<<< HEAD
   body.append("roomId", roomId);
   body.append("file", file);
 
   const response = await fetch(`${toApiBaseUrl()}/room/attachment`, {
     method: "POST",
-=======
-  body.append("file", file);
-
-  const roomAccess = getRoomAccessToken(roomId);
-  const token = getAuthToken();
-
-  const headers: Record<string, string> = {};
-  if (roomAccess) headers["X-Room-Access"] = roomAccess;
-  if (token) headers["Authorization"] = `Bearer ${token}`;
-
-  const response = await fetch(`${toApiBaseUrl()}/room/attachment?roomId=${encodeURIComponent(roomId)}`, {
-    method: "POST",
-    headers,
->>>>>>> origin/main
     body,
   });
   if (!response.ok) {
@@ -258,10 +234,6 @@ export function useRoomRtc({
   mode,
   preferredLocalStream = null,
   isHost = false,
-<<<<<<< HEAD
-=======
-  hostKey = null,
->>>>>>> origin/main
   displayName,
   onVideoCallRequested,
   onVideoCallAccepted,
@@ -325,10 +297,6 @@ export function useRoomRtc({
   const pendingStartModeRef = useRef<"video" | "chat" | null>(null);
   const lastAnnouncedModeRef = useRef<"video" | "chat" | null>(null);
   const selfDisplayNameRef = useRef<string>(normalizeDisplayName(displayName, isHost ? "Host" : "Guest"));
-<<<<<<< HEAD
-=======
-  const hostKeyRef = useRef<string | null>(hostKey || null);
->>>>>>> origin/main
   const mediaInitPromiseRef = useRef<Promise<boolean> | null>(null);
   const pendingSocketEventsRef = useRef<MessageEvent[]>([]);
   const pendingHostDisconnectedTimerRef = useRef<number | null>(null);
@@ -571,14 +539,8 @@ export function useRoomRtc({
 
   useEffect(() => {
     selfDisplayNameRef.current = normalizeDisplayName(displayName, isHost ? "Host" : "Guest");
-<<<<<<< HEAD
     syncParticipantsState();
   }, [displayName, isHost, syncParticipantsState]);
-=======
-    hostKeyRef.current = hostKey || null;
-    syncParticipantsState();
-  }, [displayName, hostKey, isHost, syncParticipantsState]);
->>>>>>> origin/main
 
   const { sendJson: sendSignal, readyState } = useSocket({
     enabled: enabled && Boolean(roomId),
@@ -595,12 +557,6 @@ export function useRoomRtc({
           peerId: peerIdRef.current,
           role: isHost ? "host" : "guest",
           phase: "active",
-<<<<<<< HEAD
-=======
-          authToken: getAuthToken() || undefined,
-          roomAccessToken: getRoomAccessToken(roomId) || undefined,
-          hostKey: hostKeyRef.current || undefined,
->>>>>>> origin/main
           displayName: selfDisplayNameRef.current,
           isMicOn,
           isCameraOn,

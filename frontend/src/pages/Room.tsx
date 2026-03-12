@@ -17,10 +17,6 @@ import ModeSwitchModal from "@/components/room/ModeSwitchModal";
 import ParticipantsDrawer from "@/components/room/ParticipantsDrawer";
 import JoinGuestPage from "./JoinGuestPage";
 import WaitingForHost from "./WaitingForHost";
-<<<<<<< HEAD
-=======
-import { getRoomHostKey } from "@/lib/roomAccess";
->>>>>>> origin/main
 
 function toWsUrl() {
   const base = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
@@ -47,11 +43,7 @@ const Room = () => {
   const { roomId = "" } = useParams();
   const [searchParams] = useSearchParams();
   const isHost = searchParams.get("host") === "1";
-<<<<<<< HEAD
   const { user } = useAuth();
-=======
-  const { user, token } = useAuth();
->>>>>>> origin/main
 
   const { getRoom, verifyRoom } = usePrivateRoomApi();
 
@@ -133,10 +125,6 @@ const Room = () => {
     mode: communicationMode || "chat",
     preferredLocalStream: previewMedia.stream,
     isHost,
-<<<<<<< HEAD
-=======
-    hostKey: isHost ? getRoomHostKey(roomId) : null,
->>>>>>> origin/main
     displayName: selfDisplayName,
     onVideoCallRequested: (fromPeerId) => {
       setIncomingVideoRequestFrom(fromPeerId);
@@ -303,10 +291,6 @@ const Room = () => {
 
     const socket = new WebSocket(toWsUrl());
     const peerId = `host-close-${crypto.randomUUID()}`;
-<<<<<<< HEAD
-=======
-    const hostKey = getRoomHostKey(roomId);
->>>>>>> origin/main
 
     socket.onopen = () => {
       socket.send(
@@ -316,11 +300,6 @@ const Room = () => {
             peerId,
             role: "host",
             phase: "gate",
-<<<<<<< HEAD
-=======
-            authToken: token || undefined,
-            hostKey: hostKey || undefined,
->>>>>>> origin/main
           })
         );
       socket.send(JSON.stringify({ type: "session_closed" }));

@@ -30,10 +30,7 @@ const userSchema = new mongoose.Schema(
     },
     googleId: {
       type: String,
-<<<<<<< HEAD
       default: null,
-=======
->>>>>>> origin/main
       unique: true,
       sparse: true,
     },

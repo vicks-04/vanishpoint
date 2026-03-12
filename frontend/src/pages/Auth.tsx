@@ -37,11 +37,7 @@ function GoogleIcon() {
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
-<<<<<<< HEAD
   const { user, setSession, setSessionFromToken } = useAuth();
-=======
-  const { user, setSession } = useAuth();
->>>>>>> origin/main
 
   const [view, setView] = useState<AuthView>("login");
   const [fullName, setFullName] = useState("");
@@ -58,11 +54,7 @@ const Auth = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const googleError = params.get("google_error");
-<<<<<<< HEAD
     const tokenFromRedirect = params.get("token");
-=======
-    const codeFromRedirect = params.get("code");
->>>>>>> origin/main
 
     if (googleError) {
       toast({
@@ -74,23 +66,10 @@ const Auth = () => {
       return;
     }
 
-<<<<<<< HEAD
     if (!tokenFromRedirect) return;
 
     setLoading(true);
     setSessionFromToken(tokenFromRedirect)
-=======
-    if (!codeFromRedirect) return;
-
-    setLoading(true);
-    apiRequest<{ token: string; user: ApiUser }>("/auth/exchange", {
-      method: "POST",
-      body: JSON.stringify({ code: codeFromRedirect }),
-    })
-      .then((response) => {
-        setSession(response.token, response.user);
-      })
->>>>>>> origin/main
       .then(() => {
         toast({ title: "Signed in", description: "Google account linked successfully." });
         navigate("/vault", { replace: true });
@@ -106,11 +85,7 @@ const Auth = () => {
       .finally(() => {
         setLoading(false);
       });
-<<<<<<< HEAD
   }, [location.search, navigate, setSessionFromToken]);
-=======
-  }, [location.search, navigate, setSession]);
->>>>>>> origin/main
 
   const handleGoogleSignIn = () => {
     window.location.assign(`${API_BASE_URL}/auth/google`);

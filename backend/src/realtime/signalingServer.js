@@ -1,13 +1,4 @@
 import { WebSocket, WebSocketServer } from "ws";
-<<<<<<< HEAD
-=======
-import jwt from "jsonwebtoken";
-import { env } from "../config/env.js";
-import { PrivateRoom } from "../models/PrivateRoom.js";
-import { TeamMeeting } from "../models/TeamMeeting.js";
-import { verifyRoomAccessToken } from "../utils/roomAccess.js";
-import { sha256 } from "../utils/crypto.js";
->>>>>>> origin/main
 
 const rooms = new Map();
 const sessionModes = new Map();
@@ -21,35 +12,6 @@ function safeSend(socket, payload) {
   }
 }
 
-<<<<<<< HEAD
-=======
-function parseJwtUserId(token) {
-  if (!token) return null;
-  try {
-    const payload = jwt.verify(String(token), env.jwtSecret);
-    return payload?.sub ? String(payload.sub) : null;
-  } catch {
-    return null;
-  }
-}
-
-function normalizeRoomId(value) {
-  return String(value || "").trim();
-}
-
-function normalizePeerId(value) {
-  return String(value || "").trim();
-}
-
-function looksLikeUuid(value) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
-}
-
-function normalizeTeamCode(value) {
-  return String(value || "").trim().toUpperCase();
-}
-
->>>>>>> origin/main
 function getRoom(roomId) {
   if (!rooms.has(roomId)) {
     rooms.set(roomId, new Map());
@@ -215,7 +177,6 @@ function broadcastSessionStarted(roomId, mode) {
   });
 }
 
-<<<<<<< HEAD
 function handleJoin(socket, message) {
   const roomId = String(message.roomId || "").trim();
   const peerId = String(message.peerId || "").trim();
@@ -309,168 +270,6 @@ function handleJoin(socket, message) {
       ...joinedPayload,
       type: "user-joined",
     });
-=======
-async function deriveSocketRole(roomId, userId, requestedRole, hostKey) {
-  if (!roomId) return "guest";
-  const requestHost = String(requestedRole || "").trim().toLowerCase() === "host";
-  if (!requestHost) return "guest";
-
-  if (looksLikeUuid(roomId)) {
-    const room = await PrivateRoom.findOne({ roomId, expiresAt: { $gt: new Date() } }).lean();
-    if (!room) return "guest";
-    if (room.hostId && userId && String(room.hostId) === String(userId)) return "host";
-    if (!room.hostId && room.hostKeyHash && hostKey && sha256(hostKey) === room.hostKeyHash) {
-      return "host";
-    }
-    return "guest";
-  }
-
-  const code = normalizeTeamCode(roomId);
-  if (!code) return "guest";
-
-  let meeting = await TeamMeeting.findOne({ code, expiresAt: { $gt: new Date() } }).lean();
-  if (!meeting) {
-    // Only allow host creation when explicitly requested + authenticated.
-    try {
-      meeting = await TeamMeeting.create({
-        code,
-        hostId: userId || null,
-        hostKeyHash: !userId && hostKey ? sha256(hostKey) : null,
-        expiresAt: new Date(Date.now() + 12 * 60 * 60 * 1000),
-      }).then((doc) => doc.toObject());
-    } catch (err) {
-      // Another host may have created it concurrently.
-      if (err?.code === 11000) {
-        meeting = await TeamMeeting.findOne({ code, expiresAt: { $gt: new Date() } }).lean();
-      } else {
-        throw err;
-      }
-    }
-  }
-
-  if (userId && meeting.hostId && String(meeting.hostId) === String(userId)) {
-    return "host";
-  }
-  if (!meeting.hostId && meeting.hostKeyHash && hostKey && sha256(hostKey) === meeting.hostKeyHash) {
-    return "host";
-  }
-  return "guest";
-}
-
-async function handleJoin(socket, message) {
-  try {
-    const roomId = normalizeRoomId(message.roomId);
-    const peerId = normalizePeerId(message.peerId);
-    if (!roomId || !peerId) return;
-    const meetingState = getMeetingState(roomId);
-
-    const phase = String(message.phase || "").trim().toLowerCase() === "gate" ? "gate" : "active";
-    const userId = parseJwtUserId(message.authToken);
-    const hostKey = String(message.hostKey || "").trim();
-    const role = await deriveSocketRole(roomId, userId, message.role, hostKey || null);
-
-    // For private rooms, require a room access token for non-host joins.
-    if (looksLikeUuid(roomId) && role !== "host") {
-      const token = String(message.roomAccessToken || "").trim();
-      const access = verifyRoomAccessToken(token, roomId);
-      if (!access.ok) {
-        safeSend(socket, { type: "error", error: access.error });
-        return;
-      }
-    }
-
-    socket.roomId = roomId;
-    socket.peerId = peerId;
-    socket.userId = userId;
-    socket.role = role;
-    socket.phase = phase;
-    socket.displayName = String(message.displayName || "").trim() || (socket.role === "host" ? "Host" : "Guest");
-    socket.mediaState = {
-      isMicOn: Boolean(message.isMicOn),
-      isCameraOn: Boolean(message.isCameraOn),
-      isScreenSharing: Boolean(message.isScreenSharing),
-    };
-    socket.raisedHand = Boolean(message.raisedHand);
-
-    clearPendingRoomStateCleanup(roomId);
-
-    if (socket.role === "host" && socket.phase === "active") {
-      clearPendingHostDisconnect(roomId);
-    }
-
-    if (meetingState.locked && socket.role !== "host") {
-      safeSend(socket, {
-        type: "meeting_locked",
-        roomId,
-      });
-      return;
-    }
-
-    const room = getRoom(roomId);
-    const existingPeerIds =
-      socket.phase === "active"
-        ? [...room.entries()]
-            .filter(([, peerSocket]) => peerSocket.phase !== "gate")
-            .map(([existingPeerId]) => existingPeerId)
-        : [];
-    const existingPeerProfiles = {};
-    for (const [existingPeerId, peerSocket] of room.entries()) {
-      if (socket.phase !== "active" && peerSocket.phase === "gate") {
-        continue;
-      }
-      if (socket.phase === "active" && peerSocket.phase === "gate") {
-        continue;
-      }
-      existingPeerProfiles[existingPeerId] = participantProfileForSocket(peerSocket);
-    }
-    room.set(peerId, socket);
-
-    safeSend(socket, {
-      type: "joined-room",
-      roomId,
-      peerId,
-      peers: existingPeerIds,
-      peerProfiles: existingPeerProfiles,
-      meetingState,
-    });
-
-    safeSend(socket, {
-      type: "existing-peers",
-      roomId,
-      peers: existingPeerIds,
-    });
-
-    const currentMode = sessionModes.get(roomId);
-    const hasActiveHost = getHostPeerIds(roomId).length > 0;
-    if (currentMode && hasActiveHost) {
-      safeSend(socket, {
-        type: "session-already-started",
-        roomId,
-        mode: currentMode,
-      });
-    }
-
-    if (socket.phase === "active") {
-      const joinedPayload = {
-        type: "peer-joined",
-        roomId,
-        peerId,
-        role: socket.role,
-        displayName: socket.displayName,
-        isMicOn: socket.mediaState.isMicOn,
-        isCameraOn: socket.mediaState.isCameraOn,
-        isScreenSharing: socket.mediaState.isScreenSharing,
-        raisedHand: socket.raisedHand,
-      };
-      relayToRoomExcept(roomId, peerId, joinedPayload);
-      relayToRoomExcept(roomId, peerId, {
-        ...joinedPayload,
-        type: "user-joined",
-      });
-    }
-  } catch {
-    safeSend(socket, { type: "error", error: "Unable to join room" });
->>>>>>> origin/main
   }
 }
 
@@ -932,10 +731,6 @@ export function setupSignalingServer(httpServer) {
     socket.role = "guest";
     socket.phase = "active";
     socket.displayName = "Guest";
-<<<<<<< HEAD
-=======
-    socket.userId = null;
->>>>>>> origin/main
     socket.mediaState = { isMicOn: false, isCameraOn: false, isScreenSharing: false };
     socket.raisedHand = false;
     socket.transitioning = false;
@@ -949,11 +744,7 @@ export function setupSignalingServer(httpServer) {
       }
 
       if (message.type === "join-room") {
-<<<<<<< HEAD
         handleJoin(socket, message);
-=======
-        void handleJoin(socket, message);
->>>>>>> origin/main
         return;
       }
 

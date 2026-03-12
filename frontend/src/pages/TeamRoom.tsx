@@ -4,10 +4,6 @@ import { BarChart3, Copy, Lock, MessageSquare, Users, Video } from "lucide-react
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-<<<<<<< HEAD
-=======
-import { getTeamHostKey, setTeamHostKey } from "@/lib/roomAccess";
->>>>>>> origin/main
 import { useRoomRtc } from "@/hooks/useRoomRtc";
 import ParticipantGrid from "@/components/team/ParticipantGrid";
 import MeetingControls from "@/components/team/MeetingControls";
@@ -69,17 +65,6 @@ const TeamRoom = () => {
     [user?.display_name]
   );
 
-<<<<<<< HEAD
-=======
-  useEffect(() => {
-    if (!inMeeting || !isHost || !roomId) return;
-    if (!getTeamHostKey(roomId)) {
-      const hostKey = crypto.randomUUID();
-      setTeamHostKey(roomId, hostKey);
-    }
-  }, [inMeeting, isHost, roomId]);
-
->>>>>>> origin/main
   const {
     localStream,
     remoteStreams,
@@ -117,10 +102,6 @@ const TeamRoom = () => {
     enabled: inMeeting,
     mode: "video",
     isHost,
-<<<<<<< HEAD
-=======
-    hostKey: isHost ? getTeamHostKey(roomId) : null,
->>>>>>> origin/main
     displayName: selfDisplayName,
     onRaiseHandReceived: (fromPeerId) => {
       setRaisedHands((current) => (current.includes(fromPeerId) ? current : [...current, fromPeerId]));
@@ -172,16 +153,6 @@ const TeamRoom = () => {
   }, [inMeeting]);
 
   useEffect(() => {
-<<<<<<< HEAD
-=======
-    if (!inMeeting) return;
-    if (user) return;
-    toast.error("Please sign in to join a team meeting.");
-    navigate("/auth", { replace: true });
-  }, [inMeeting, navigate, user]);
-
-  useEffect(() => {
->>>>>>> origin/main
     if (!inMeeting) {
       setElapsedSeconds(0);
       return;
