@@ -2,7 +2,7 @@
 
 This project was migrated to a MERN architecture while preserving the same UI flows and business behavior:
 - Private Mode and Team Mode remain React client workflows.
-- Vault and Authentication were migrated from Supabase to `Express + MongoDB`.
+- Vault and Authentication were migrated from Supabase to `Express +   MongoDB`.
 - Vault encryption/decryption remains client-side (AES-GCM via Web Crypto), exactly as before.
 
 ## Folder Structure
