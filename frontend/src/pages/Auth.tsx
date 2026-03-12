@@ -95,7 +95,7 @@ const Auth = () => {
     event.preventDefault();
     setLoading(true);
     try {
-      const response = await apiRequest<{ token: string; user: ApiUser }>("/auth/login", {
+      const response = await apiRequest<{ token: string; user: ApiUser }>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
       });
@@ -122,7 +122,7 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      const response = await apiRequest<{ token: string; user: ApiUser }>("/auth/signup", {
+      const response = await apiRequest<{ token: string; user: ApiUser }>("/api/auth/signup", {
         method: "POST",
         body: JSON.stringify({ fullName, email, password, confirmPassword }),
       });
@@ -139,7 +139,7 @@ const Auth = () => {
     event.preventDefault();
     setLoading(true);
     try {
-      const response = await apiRequest<{ message: string; resetLink?: string }>("/auth/forgot-password", {
+      const response = await apiRequest<{ message: string; resetLink?: string }>("/api/auth/forgot-password", {
         method: "POST",
         body: JSON.stringify({ email }),
       });
@@ -341,3 +341,5 @@ const Auth = () => {
 };
 
 export default Auth;
+
+
